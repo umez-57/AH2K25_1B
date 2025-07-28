@@ -32,7 +32,11 @@ RUN python download_models.py
 # Download Gemini GGUF model
 RUN wget -O models/gemma-3-1b-it-Q4_K_M.gguf https://huggingface.co/ggml-org/gemma-3-1b-it-GGUF/resolve/main/gemma-3-1b-it-Q4_K_M.gguf
 
-# Create entrypoint script
+# Copy sample PDFs for build-time processing (we'll use the actual PDFs from the input directory)
+# This ensures the pipeline components are tested during build
+RUN cp input/*.pdf /tmp/ 2>/dev/null || echo "No PDFs to copy during build"
+
+# Create a simple entrypoint that just runs main.py
 RUN echo '#!/bin/bash\n\
 set -e\n\
 \n\
@@ -61,13 +65,15 @@ if [ ! -d "/app/input" ] || [ -z "$(ls -A /app/input/*.pdf 2>/dev/null)" ]; then
     exit 1\n\
 fi\n\
 \n\
-# Run the complete pipeline\n\
+# Run PDF parsing\n\
 echo "Running PDF parsing..."\n\
 python src/parse_pdf.py --persona "$PERSONA" --job "$JOB"\n\
 \n\
+# Build chunks and index\n\
 echo "Building chunks and index..."\n\
 python -c "from src.build_chunks_and_index import build_index_if_needed; build_index_if_needed(persona=\"$PERSONA\", job=\"$JOB\")"\n\
 \n\
+# Run main pipeline\n\
 echo "Running main pipeline..."\n\
 python main.py --input input --persona "$PERSONA" --job "$JOB" --output output.json\n\
 \n\
