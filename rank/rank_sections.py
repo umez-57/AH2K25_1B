@@ -12,16 +12,34 @@ from sentence_transformers import SentenceTransformer
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 
-ROOT        = Path(__file__).parents[1]
+# Hardcoded Docker paths
+ROOT        = Path("/app")
 INDEX_PATH  = ROOT / "vector_store/index.faiss"
 CHUNKS_PATH = ROOT / "vector_store/chunks.pkl"
 EMBED_MODEL = "intfloat/e5-base-v2"
 
-_index  = faiss.read_index(str(INDEX_PATH))
-_chunks = pickle.load(open(CHUNKS_PATH, "rb"))
-_embedder = SentenceTransformer(EMBED_MODEL, device="cpu")
-if _index.d != _embedder.get_sentence_embedding_dimension():
-    raise ValueError("Vector-store dim ≠ embedder dim — rebuild needed")
+# Load components with error handling
+try:
+    logging.info("Loading FAISS index from: %s", INDEX_PATH)
+    if not INDEX_PATH.exists():
+        raise FileNotFoundError(f"FAISS index not found at {INDEX_PATH}")
+    _index = faiss.read_index(str(INDEX_PATH))
+    
+    logging.info("Loading chunks from: %s", CHUNKS_PATH)
+    if not CHUNKS_PATH.exists():
+        raise FileNotFoundError(f"Chunks file not found at {CHUNKS_PATH}")
+    _chunks = pickle.load(open(CHUNKS_PATH, "rb"))
+    
+    logging.info("Loading sentence transformer: %s", EMBED_MODEL)
+    _embedder = SentenceTransformer(EMBED_MODEL, device="cpu")
+    
+    if _index.d != _embedder.get_sentence_embedding_dimension():
+        raise ValueError("Vector-store dim ≠ embedder dim — rebuild needed")
+        
+except Exception as e:
+    logging.error("Failed to load ranking components: %s", e)
+    raise
+
 def rank_sections(query: str, k: int = 5) -> List[Dict]:
     """
     Top-k UNIQUE sections.

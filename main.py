@@ -169,7 +169,7 @@ def get_section_content(heading: str) -> str:
     """Get the actual content of a section from the chunks."""
     try:
         import pickle
-        chunks_path = "vector_store/chunks.pkl"
+        chunks_path = "/app/vector_store/chunks.pkl"
         if not os.path.exists(chunks_path):
             return ""
         
@@ -199,7 +199,7 @@ def main(pdf_dir: str, persona: str, job: str, out_json: str):
     parse_pdf_main(persona=persona, job=job)
 
     # 1) ensure vector store
-    build_index_if_needed(pdf_dir, persona=persona, job=job)
+    build_index_if_needed("/app/input", persona=persona, job=job)
 
     # 2) initial retrieval with higher k to ensure we get enough sections
     cand = rank_sections(f"{persona}. {job}", k=TOP_K_RANK)
@@ -255,10 +255,15 @@ def main(pdf_dir: str, persona: str, job: str, out_json: str):
         "subsection_analysis": analyses
     }
 
-    Path(out_json).parent.mkdir(parents=True, exist_ok=True)
-    with open(out_json, "w", encoding="utf8") as f:
+    # Ensure output directory exists
+    output_dir = "/app/output"
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
+    
+    # Use hardcoded output path
+    final_output_path = "/app/output/output.json"
+    with open(final_output_path, "w", encoding="utf8") as f:
         json.dump(result, f, indent=2, ensure_ascii=False)
-    logging.info("🎉 Written %s", out_json)
+    logging.info("🎉 Written %s", final_output_path)
 
 # ─────────────────────────── CLI ────────────────────────────
 if __name__ == "__main__":
@@ -267,9 +272,9 @@ if __name__ == "__main__":
         description=textwrap.dedent("""
         Persona-aware doc-QA pipeline with dynamic exclude list +
         cross-encoder rerank (no hard-coded domain logic)."""))
-    p.add_argument("--input",  default="input")
+    p.add_argument("--input",  default="/app/input")
     p.add_argument("--persona", required=True)
     p.add_argument("--job",    required=True, dest="job_to_be_done")
-    p.add_argument("--output", default="output/result.json")
+    p.add_argument("--output", default="/app/output/output.json")
     a = p.parse_args()
     main(a.input, a.persona, a.job_to_be_done, a.output)

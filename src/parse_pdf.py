@@ -1,6 +1,7 @@
 import os
 import json
 import statistics
+import logging
 from collections import Counter, defaultdict
 import re
 
@@ -112,9 +113,17 @@ def postfilter(headings):
 
 # ---------- CLI entry-point ---------------------------------
 def main(persona: str = "", job: str = ""):
-    root = os.getcwd()
-    in_dir  = os.path.join(root, "input")
-    out_dir = os.path.join(root, "output")
+    # Hardcoded Docker paths
+    in_dir  = "/app/input"
+    out_dir = "/app/output"
+    
+    logging.info("Using hardcoded Docker paths:")
+    logging.info("Input directory: %s", in_dir)
+    logging.info("Output directory: %s", out_dir)
+    
+    if not os.path.exists(in_dir):
+        raise FileNotFoundError(f"Input directory not found: {in_dir}")
+    
     os.makedirs(out_dir, exist_ok=True)
 
     for fname in sorted(os.listdir(in_dir)):

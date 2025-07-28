@@ -3,4 +3,4 @@ numpy==2.3.2
 pdfplumber==0.11.7
 sentence_transformers==5.0.0
 tqdm==4.67.1
-llama-cpp-python
+llama-cpp-python==0.3.14

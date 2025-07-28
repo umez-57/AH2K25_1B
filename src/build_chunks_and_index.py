@@ -14,9 +14,10 @@ from sentence_transformers import SentenceTransformer
 # ─────────────────────────────────────────────────────────────
 EMBED_MODEL_NAME   = "intfloat/e5-base-v2"   # 768-dim, ≈110 MB
 MAX_TOKENS         = 512
-INPUT_DIR          = "input"        # PDFs
-HEADINGS_DIR       = "output"       # *.headings.json produced by parser
-OUT_DIR            = "vector_store"
+# Hardcoded Docker paths
+INPUT_DIR          = "/app/input"        # PDFs
+HEADINGS_DIR       = "/app/output"       # *.headings.json produced by parser
+OUT_DIR            = "/app/vector_store"
 CHUNKS_PKL         = "chunks.pkl"
 FAISS_FILE         = "index.faiss"
 # ─────────────────────────────────────────────────────────────
@@ -91,6 +92,18 @@ def build_chunks(pdf_path: str, head_json: str, persona: str = "", job: str = ""
 # ───────────────────────── main routine ─────────────────────
 def main(pdf_dir: str = INPUT_DIR, headings_dir: str = HEADINGS_DIR, persona: str = "", job: str = ""):
     all_chunks: List[Dict] = []
+    
+    # Ensure directories exist
+    logging.info("Checking directories...")
+    logging.info("PDF directory: %s", pdf_dir)
+    logging.info("Headings directory: %s", headings_dir)
+    logging.info("Output directory: %s", OUT_DIR)
+    
+    if not os.path.exists(pdf_dir):
+        raise FileNotFoundError(f"PDF directory not found: {pdf_dir}")
+    if not os.path.exists(headings_dir):
+        raise FileNotFoundError(f"Headings directory not found: {headings_dir}")
+    
     for pdf in sorted(pathlib.Path(pdf_dir).glob("*.pdf")):
         head_json = pathlib.Path(headings_dir)/(pdf.stem + ".headings.json")
         if not head_json.exists():
@@ -116,8 +129,8 @@ def main(pdf_dir: str = INPUT_DIR, headings_dir: str = HEADINGS_DIR, persona: st
     logging.info("🎉  Wrote %s (%d × %d) + %s", FAISS_FILE, len(all_chunks), dim, CHUNKS_PKL)
 
 # ───────────────── helper for orchestrator ──────────────────
-def build_index_if_needed(pdf_dir="input", headings_dir="output", force=False, persona: str = "", job: str = ""):
-    vs = pathlib.Path(__file__).parent.parent / "vector_store"
+def build_index_if_needed(pdf_dir="/app/input", headings_dir="/app/output", force=False, persona: str = "", job: str = ""):
+    vs = pathlib.Path("/app/vector_store")
     if force or not (vs/"index.faiss").is_file() or not (vs/"chunks.pkl").is_file():
         logging.info("Vector store missing → rebuilding …")
         main(pdf_dir, headings_dir, persona, job)
