@@ -13,7 +13,7 @@ This Docker container processes PDF documents using a RAG (Retrieval-Augmented G
 ## Building the Docker Image
 
 ```bash
-docker build --platform linux/amd64 -t pdf-processor .
+docker build -t ah2k25-1b .
 ```
 
 ## Usage
@@ -50,8 +50,15 @@ Put all your PDF files in an `input/` directory. The filenames should match thos
 
 ### 3. Run the container
 
+FOR Linux / macOS (Bash)
+
 ```bash
-docker run -v $(pwd)/input:/app/input -v $(pwd)/input.json:/app/input.json -v $(pwd)/output:/app/output pdf-processor
+docker run --rm -v "$(pwd)/input:/app/input" -v "$(pwd)/output:/app/output" -v "$(pwd)/input.json:/app/input.json" --network none ah2k25-1b
+```
+FOR WINDOWS PowerShell
+
+```powershell
+docker run --rm -v "${PWD}\input:/app/input" -v "${PWD}\output:/app/output" -v "${PWD}\input.json:/app/input.json" --network none ah2k25-1b
 ```
 
 ### 4. Get the results
@@ -70,6 +77,8 @@ The pipeline generates `output.json` with:
 - **metadata**: Information about input documents, persona, job, and processing timestamp
 - **extracted_sections**: Ranked list of relevant sections with document names, titles, and page numbers
 - **subsection_analysis**: Detailed analysis of each relevant section
+
+### NOTE: filename.headings.json are also kept in output folder for future use
 
 ## Pipeline Steps
 
