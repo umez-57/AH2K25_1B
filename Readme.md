@@ -83,6 +83,7 @@ The pipeline generates `output.json` with:
 
 ## Requirements
 
+
 - Docker
 - PDF files in input/ directory
 - input.json configuration file
