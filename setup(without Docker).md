@@ -84,20 +84,20 @@ python main.py \
   --output output/result_food.json
 ```
 
-- ``: Path to your PDF folder (e.g., `input/`).
-- ``: User role you want to tailor the results for.
-- ``: The specific task to accomplish.
-- ``: Path and filename for the final JSON output.
+- \`\`: Path to your PDF folder (e.g., `input/`).
+- \`\`: User role you want to tailor the results for.
+- \`\`: The specific task to accomplish.
+- \`\`: Path and filename for the final JSON output.
 - **Output files**: After running, the `output/` folder will contain intermediate heading files named `<pdf_basename>_headings.json` for each input PDF, plus the final JSON named as you specified (e.g., `result_food.json`).
 
-You can change the `--persona` and `--job` arguments to test different scenarios on the same set of PDFs.\
-If you need to process a new dataset (different PDF collection), update the `input/` folder and rerun steps 4–6.
+You can change the `--persona` and `--job` arguments to test different scenarios on the same set of PDFs **without re-running Steps 4 and 5** — simply invoke Step 6 again with new parameters.
 
----
+If you need to change the PDF dataset itself (e.g., add, remove, or replace PDFs in `input/`), then:
 
-### Notes and Troubleshooting
+1. Remove all files under the `input/` directory.
+2. Place your new PDF files in `input/` (ensure filenames match any required metadata).
+3. Rerun **Step 4** (PDF parsing) and **Step 5** (vectorization and indexing).
+4. Finally, rerun **Step 6** to generate results for the updated dataset.
 
-- Ensure your virtual environment is active before running any Python commands.
-- If you encounter import errors, verify that `requirements.txt` lists all dependencies and reinstall them.
-- The `main.py` script will produce a structured JSON matching the schema.
+This ensures the FAISS index and embeddings reflect the new PDF collection.
 
