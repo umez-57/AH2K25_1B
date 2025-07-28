@@ -29,6 +29,8 @@ RUN mkdir -p input output vector_store models data
 # Download models during build time (when internet is available)
 RUN python download_models.py
 
+ENV HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
+
 # Download Gemma 3 GGUF model (compatible with llama-cpp-python 0.3.14)
 RUN wget https://huggingface.co/ggml-org/gemma-3-1b-it-GGUF/resolve/main/gemma-3-1b-it-Q4_K_M.gguf -O /tmp/gemma-3-1b-it-Q4_K_M.gguf && \
     ls -la /tmp/gemma-3-1b-it-Q4_K_M.gguf && \
