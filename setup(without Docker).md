@@ -1,6 +1,9 @@
 # Local Setup and Execution Guide (Without Docker)
 
-Follow these steps to install dependencies and run the PDF processing pipeline locally (no Docker required).
+> **When to use this guide**  
+> If the Docker workflow fails or you simply prefer running everything natively, follow the steps below.  
+> **Internet access is mandatory the first time** you set things up because the script downloads large open-source models.
+
 
 ---
 
@@ -50,7 +53,20 @@ pip install -r requirements.txt
   - `tqdm==4.67.1`
   - `llama-cpp-python`
 
-## 4. Parse PDFs (Layout Extraction)
+## 4. Download the LLM Model (One-Time Only)
+
+```bash
+# Create a folder to hold local models
+mkdir -p models
+
+# Download Gemma-3-1b-it-Q4_K_M (~250 MB)
+wget -O models/gemma-3-1b-it-Q4_K_M.gguf \
+  https://huggingface.co/ggml-org/gemma-3-1b-it-GGUF/resolve/main/gemma-3-1b-it-Q4_K_M.gguf
+```
+After this, models/ contains gemma-3-1b-it-Q4_K_M.gguf, which llama-cpp-python loads offline.
+
+
+## 5. Parse PDFs (Layout Extraction)
 
 Run the PDF parsing engine to extract text, font, and layout data from your PDF files.
 
@@ -61,7 +77,7 @@ python .\src\parse_pdf.py
 - **Input**: Reads all `*.pdf` files under the `input/` folder in the project root directory.
 - **Output**: Typically writes intermediate files (e.g., extracted JSON) in a `data/` or temp folder.
 
-## 5. Vectorize and Index Chunks
+## 6. Vectorize and Index Chunks
 
 Build semantic embeddings and a FAISS index over the extracted PDF chunks:
 
@@ -72,7 +88,7 @@ python .\src\build_chunks_and_index.py
 - **Embeddings**: Uses the `intfloat/e5-base-v2` model to generate 768-dimensional vectors.
 - **Index**: Stores vectors and chunk metadata for fast similarity search.
 
-## 6. Run the Main Pipeline
+## 7. Run the Main Pipeline
 
 Execute the end-to-end persona-aware extraction and ranking:
 
